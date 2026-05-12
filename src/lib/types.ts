@@ -31,6 +31,7 @@ export type SalesPhrase = {
   category: string | null;
   meeting_ref: string | null;
   notes: string | null;
+  keywords: string[] | null;
 };
 
 export type VocabularyItem = {
@@ -78,9 +79,11 @@ export type ErrorFindingItem = {
 export type QuizQuestion = {
   id: string;
   quiz_topic: string;
+  scenario: string | null;
   question: string;
   options: string[];
   correct_index: number;
+  option_whys: string[] | null;
   explanation: string | null;
   meeting_ref: string | null;
 };

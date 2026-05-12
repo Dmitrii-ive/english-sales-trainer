@@ -26,13 +26,16 @@ Full sales-style sentences/expressions Dmitrii wants to absorb.
       "context": "discovery",
       "category": "active listening",
       "meeting_ref": "ACME 2026-05-08",
-      "notes": "Use after listing pains to confirm understanding before proposing."
+      "notes": "Use after listing pains to confirm understanding before proposing.",
+      "keywords": ["make sure", "priorities"]
     }
   ]
 }
 ```
 
 `context` ∈ `discovery | demo | objection | closing | other` (free text accepted too).
+
+**`keywords`** (optional). If provided, RU→EN translation mode passes when the answer contains **all** keywords (case/punct insensitive substring match) instead of requiring an exact full-sentence match. Use for phrases where paraphrase is fine but specific power-words must appear (e.g. "address head-on", "ideal next step").
 
 ### `vocabulary`
 
@@ -131,23 +134,40 @@ A sentence Dmitrii produced (with a grammar/usage mistake) + the corrected versi
 
 ### `quiz`
 
-Multiple choice — used for product/methodology checks tied to a meeting.
+Multiple choice — used for product/methodology checks AND scenario-based sales-decision drills tied to a meeting.
 
 ```json
 {
   "type": "quiz",
   "items": [
     {
-      "quiz_topic": "MEDDIC fundamentals",
-      "question": "Which of the following is the 'I' in MEDDIC?",
-      "options": ["Influence", "Identify pain", "Implementation timeline", "Industry"],
+      "quiz_topic": "Objection handling",
+      "scenario": "Customer says: 'Your solution is too expensive for us right now.'",
+      "question": "What's the strongest response?",
+      "options": [
+        "Okay, what's your budget?",
+        "That's a fair concern. Help me understand — is it the absolute price, or the ROI timeline that's the issue?",
+        "We have a cheaper plan.",
+        "Most customers think that initially."
+      ],
       "correct_index": 1,
-      "explanation": "I = Identify Pain. The deal needs a concrete pain that justifies change.",
+      "option_whys": [
+        "Сразу прыгает в дисконт — слабая позиция, возражение не отработано.",
+        "Acknowledge → reframe в discovery вопрос. Раскрывает реальное возражение.",
+        "Discount-first — теряем маржу до того, как поняли причину.",
+        "Звучит как dismiss, не acknowledge."
+      ],
       "meeting_ref": "ACME 2026-05-08"
     }
   ]
 }
 ```
+
+Fields:
+- **`quiz_topic`** — short tag for the area (e.g. "Objection handling", "MEDDIC fundamentals").
+- **`scenario`** (optional) — situational setup shown as a quoted block above the question. Use this for sales-decision drills where the question is "what do you say next?". Skip for pure-knowledge questions.
+- **`option_whys`** (optional) — array of explanations parallel to `options` (same length). Each entry explains why that option is good or bad. When provided, the UI shows the user's pick's `why` (if wrong) and the correct option's `why`. Falls back to the global `explanation` if `option_whys` is absent.
+- **`explanation`** — used only if `option_whys` is not provided.
 
 ### Response
 

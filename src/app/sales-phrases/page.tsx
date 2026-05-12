@@ -25,14 +25,14 @@ export default async function SalesPhrasesPage({
   if (ids.length > 0) {
     const literal = `{${ids.join(",")}}`;
     const r = await sql<SalesPhrase>`
-      SELECT id, text_en, text_ru, context, category, meeting_ref, notes
+      SELECT id, text_en, text_ru, context, category, meeting_ref, notes, keywords
       FROM sales_phrases
       WHERE id = ANY(${literal}::uuid[])`;
     const map = new Map(r.rows.map((row) => [row.id, row]));
     rows = ids.map((id) => map.get(id)).filter(Boolean) as SalesPhrase[];
   } else {
     const r = await sql<SalesPhrase>`
-      SELECT id, text_en, text_ru, context, category, meeting_ref, notes
+      SELECT id, text_en, text_ru, context, category, meeting_ref, notes, keywords
       FROM sales_phrases
       ORDER BY created_at DESC
       LIMIT 20`;

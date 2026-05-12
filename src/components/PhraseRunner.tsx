@@ -94,7 +94,11 @@ export function PhraseRunner({
           setAnswer={setAnswer}
           matched={matched}
           onSubmit={() => {
-            const ok = normalize(answer) === normalize(item.text_en);
+            const userN = normalize(answer);
+            const ok =
+              item.keywords && item.keywords.length > 0
+                ? item.keywords.every((kw) => userN.includes(normalize(kw)))
+                : userN === normalize(item.text_en);
             setMatched(ok);
             setRevealed(true);
           }}
@@ -243,6 +247,19 @@ function TranslateCard({
         {d.translate}
       </div>
       <div className="text-xl">{item.text_ru}</div>
+
+      {item.keywords && item.keywords.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {item.keywords.map((kw, i) => (
+            <span
+              key={i}
+              className="inline-block text-xs px-2 py-1 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent-strong)] border border-[var(--color-accent)]/20"
+            >
+              {kw}
+            </span>
+          ))}
+        </div>
+      )}
 
       <textarea
         value={answer}

@@ -10,6 +10,7 @@ const SalesPhraseItem = z.object({
   category: z.string().optional(),
   meeting_ref: z.string().optional(),
   notes: z.string().optional(),
+  keywords: z.array(z.string()).optional(),
 });
 
 const VocabularyItem = z.object({
@@ -57,14 +58,21 @@ const ErrorFindingItem = z.object({
   meeting_ref: z.string().optional(),
 });
 
-const QuizItem = z.object({
-  quiz_topic: z.string().min(1),
-  question: z.string().min(1),
-  options: z.array(z.string()).min(2),
-  correct_index: z.number().int().nonnegative(),
-  explanation: z.string().optional(),
-  meeting_ref: z.string().optional(),
-});
+const QuizItem = z
+  .object({
+    quiz_topic: z.string().min(1),
+    scenario: z.string().optional(),
+    question: z.string().min(1),
+    options: z.array(z.string()).min(2),
+    correct_index: z.number().int().nonnegative(),
+    option_whys: z.array(z.string()).optional(),
+    explanation: z.string().optional(),
+    meeting_ref: z.string().optional(),
+  })
+  .refine(
+    (v) => !v.option_whys || v.option_whys.length === v.options.length,
+    { message: "option_whys length must match options length" },
+  );
 
 const Body = z.discriminatedUnion("type", [
   z.object({ type: z.literal("sales_phrase"), items: z.array(SalesPhraseItem).min(1) }),
@@ -96,8 +104,8 @@ export async function POST(request: Request) {
     case "sales_phrase": {
       for (const it of parsed.data.items) {
         const r = await sql<{ id: string }>`
-          INSERT INTO sales_phrases (text_en, text_ru, context, category, meeting_ref, notes)
-          VALUES (${it.text_en}, ${it.text_ru}, ${it.context ?? null}, ${it.category ?? null}, ${it.meeting_ref ?? null}, ${it.notes ?? null})
+          INSERT INTO sales_phrases (text_en, text_ru, context, category, meeting_ref, notes, keywords)
+          VALUES (${it.text_en}, ${it.text_ru}, ${it.context ?? null}, ${it.category ?? null}, ${it.meeting_ref ?? null}, ${it.notes ?? null}, ${it.keywords ? JSON.stringify(it.keywords) : null}::jsonb)
           RETURNING id`;
         ids.push(r.rows[0].id);
       }
@@ -156,8 +164,8 @@ export async function POST(request: Request) {
     case "quiz": {
       for (const it of parsed.data.items) {
         const r = await sql<{ id: string }>`
-          INSERT INTO quiz_questions (quiz_topic, question, options, correct_index, explanation, meeting_ref)
-          VALUES (${it.quiz_topic}, ${it.question}, ${JSON.stringify(it.options)}::jsonb, ${it.correct_index}, ${it.explanation ?? null}, ${it.meeting_ref ?? null})
+          INSERT INTO quiz_questions (quiz_topic, scenario, question, options, correct_index, option_whys, explanation, meeting_ref)
+          VALUES (${it.quiz_topic}, ${it.scenario ?? null}, ${it.question}, ${JSON.stringify(it.options)}::jsonb, ${it.correct_index}, ${it.option_whys ? JSON.stringify(it.option_whys) : null}::jsonb, ${it.explanation ?? null}, ${it.meeting_ref ?? null})
           RETURNING id`;
         ids.push(r.rows[0].id);
       }

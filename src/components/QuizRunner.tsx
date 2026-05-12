@@ -73,6 +73,13 @@ export function QuizRunner({ items }: { items: QuizQuestion[] }) {
       <div className="text-xs uppercase tracking-widest text-[var(--color-fg-muted)]">
         {q.quiz_topic}
       </div>
+
+      {q.scenario && (
+        <div className="bg-[var(--color-surface)] border-l-4 border-[var(--color-accent)] rounded-xl px-4 py-3 text-sm leading-relaxed italic">
+          {q.scenario}
+        </div>
+      )}
+
       <div className="text-lg leading-snug">{q.question}</div>
 
       <div className="flex flex-col gap-2 mt-2">
@@ -113,7 +120,27 @@ export function QuizRunner({ items }: { items: QuizQuestion[] }) {
               {correct ? d.correct : d.incorrect}
             </span>
           </div>
-          {q.explanation && (
+
+          {q.option_whys && picked !== null && (
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm flex flex-col gap-3">
+              {!correct && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-[var(--color-fg-muted)] mb-1">
+                    Your pick — {String.fromCharCode(65 + picked)}
+                  </div>
+                  <div className="text-[var(--color-fg)]">{q.option_whys[picked]}</div>
+                </div>
+              )}
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-[var(--color-success)] mb-1">
+                  {correct ? "Why this works" : `Correct — ${String.fromCharCode(65 + q.correct_index)}`}
+                </div>
+                <div>{q.option_whys[q.correct_index]}</div>
+              </div>
+            </div>
+          )}
+
+          {q.explanation && !q.option_whys && (
             <div className="text-sm text-[var(--color-fg-muted)]">
               <span className="uppercase text-[10px] tracking-widest mr-1">
                 {d.explanation}:

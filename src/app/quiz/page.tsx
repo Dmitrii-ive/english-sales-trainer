@@ -22,13 +22,13 @@ export default async function Page({
   if (ids.length > 0) {
     const literal = `{${ids.join(",")}}`;
     const r = await sql<QuizQuestion>`
-      SELECT id, quiz_topic, question, options, correct_index, explanation, meeting_ref
+      SELECT id, quiz_topic, scenario, question, options, correct_index, option_whys, explanation, meeting_ref
       FROM quiz_questions WHERE id = ANY(${literal}::uuid[])`;
     const map = new Map(r.rows.map((row) => [row.id, row]));
     rows = ids.map((id) => map.get(id)).filter(Boolean) as QuizQuestion[];
   } else {
     const r = await sql<QuizQuestion>`
-      SELECT id, quiz_topic, question, options, correct_index, explanation, meeting_ref
+      SELECT id, quiz_topic, scenario, question, options, correct_index, option_whys, explanation, meeting_ref
       FROM quiz_questions ORDER BY created_at DESC LIMIT 15`;
     rows = r.rows;
   }
