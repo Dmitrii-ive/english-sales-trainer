@@ -53,6 +53,10 @@ export function QuizRunner({ items }: { items: QuizQuestion[] }) {
         grade: UI_GRADE[g],
         exercise_type: "quiz",
         correct,
+        user_answer:
+          picked !== null
+            ? `${String.fromCharCode(65 + picked)}: ${q.options[picked]}`
+            : undefined,
       }),
     });
     setPicked(null);

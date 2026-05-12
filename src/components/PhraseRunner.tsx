@@ -32,15 +32,20 @@ export function PhraseRunner({
 
   function gradeAndNext(g: "hard" | "good" | "easy") {
     if (!item) return;
+    const body: Record<string, unknown> = {
+      item_type: "sales_phrase",
+      item_id: item.id,
+      grade: UI_GRADE[g],
+      exercise_type: `sales_phrase:${mode}`,
+    };
+    if (mode === "ru_en") {
+      body.user_answer = answer;
+      if (matched !== null) body.correct = matched;
+    }
     void fetch("/api/review", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        item_type: "sales_phrase",
-        item_id: item.id,
-        grade: UI_GRADE[g],
-        exercise_type: `sales_phrase:${mode}`,
-      }),
+      body: JSON.stringify(body),
     });
     if (idx + 1 < items.length) {
       setIdx(idx + 1);
