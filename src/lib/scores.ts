@@ -8,6 +8,6 @@ export function easeToScore(ease: number | null | undefined): number {
 
 export const SCORE_GROUPS = {
   vocab: ["vocabulary"],
-  grammar: ["cloze", "error_finding"],
+  grammar: ["cloze", "error_finding", "drill"],
   fluency: ["sales_phrase", "speaking", "roleplay", "quiz"],
 } as const;

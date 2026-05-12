@@ -5,7 +5,8 @@ export type ItemType =
   | "roleplay"
   | "cloze"
   | "error_finding"
-  | "quiz";
+  | "quiz"
+  | "drill";
 
 export type ExerciseMode =
   | "audio_repeat"  // sales phrases: hear → repeat
@@ -15,7 +16,8 @@ export type ExerciseMode =
   | "roleplay"
   | "cloze"
   | "error_finding"
-  | "quiz";
+  | "quiz"
+  | "drill";
 
 export type DailyExercise = {
   type: ItemType;
@@ -84,6 +86,17 @@ export type QuizQuestion = {
   options: string[];
   correct_index: number;
   option_whys: string[] | null;
+  explanation: string | null;
+  meeting_ref: string | null;
+};
+
+export type DrillItem = {
+  id: string;
+  topic: string;
+  subtopic: string | null;
+  sentence: string;
+  options: string[];
+  correct_index: number;
   explanation: string | null;
   meeting_ref: string | null;
 };

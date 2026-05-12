@@ -132,6 +132,37 @@ A sentence Dmitrii produced (with a grammar/usage mistake) + the corrected versi
 }
 ```
 
+### `drill`
+
+Single-blank grammar/structure drill with multiple choice. Auto-graded: correct on first try → SM-2 grade 4 (good), incorrect → grade 2 (hard).
+
+```json
+{
+  "type": "drill",
+  "items": [
+    {
+      "topic": "3rd person -s + Articles",
+      "subtopic": "Verb conjugation",
+      "sentence": "Our agent ___ leads based on visitor data.",
+      "options": ["qualify", "qualifies", "qualifying"],
+      "correct_index": 1,
+      "explanation": "Subject 'Our agent' is 3rd person singular → verb takes -s.",
+      "meeting_ref": "grammar-week-1"
+    }
+  ]
+}
+```
+
+Fields:
+- **`topic`** — the rule being drilled. Shown as the page subtitle (e.g. "3rd person -s + Articles · 10 questions"). Group items with the same `topic` into one drill set.
+- **`subtopic`** (optional) — finer label, currently not rendered but kept for analytics.
+- **`sentence`** — the example sentence with **exactly one blank**, marked by `___` (three or more underscores) or `…`. The UI renders the blank with a colored underline and fills it in after the user picks.
+- **`options`** — 2 to 5 strings. Order is preserved as shown.
+- **`correct_index`** — 0-based.
+- **`explanation`** (optional) — short rule explanation, shown after the answer is revealed.
+
+UX: tap an option → wrong/right highlight + correct answer indicated + explanation → tap "Next". No manual SM-2 grading by the user.
+
 ### `quiz`
 
 Multiple choice — used for product/methodology checks AND scenario-based sales-decision drills tied to a meeting.

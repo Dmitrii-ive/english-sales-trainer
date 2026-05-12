@@ -1,22 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #f4f5f7;
+  --color-bg: #faf7f2;
   --color-surface: #ffffff;
-  --color-surface-2: #eaecf0;
-  --color-border: #e5e7ec;
-  --color-fg: #0f172a;
-  --color-fg-muted: #64748b;
-  --color-accent: #0d9488;
-  --color-accent-strong: #0f766e;
-  --color-danger: #dc2626;
-  --color-danger-soft: #fee2e2;
-  --color-warn: #b45309;
-  --color-warn-soft: #fef3c7;
-  --color-success: #15803d;
-  --color-success-soft: #dcfce7;
+  --color-surface-2: #f1ece3;
+  --color-border: #e7e1d3;
+  --color-fg: #1a1814;
+  --color-fg-muted: #6f6a60;
+  --color-accent: #b3422c;
+  --color-accent-strong: #9a341f;
+  --color-cta: #0d0c0a;
+  --color-danger: #c0392b;
+  --color-danger-soft: #f7dfdb;
+  --color-warn: #b07a2b;
+  --color-warn-soft: #f6ead0;
+  --color-success: #3f7a3a;
+  --color-success-soft: #dcecd6;
 
   --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-newsreader);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -27,8 +29,12 @@ html, body {
   font-family: var(--font-sans), Inter, system-ui, -apple-system, sans-serif;
 }
 
+.font-serif {
+  font-family: var(--font-serif), Charter, "Source Serif Pro", Georgia, serif;
+}
+
 button { cursor: pointer; }
-button:disabled { cursor: not-allowed; opacity: 0.5; }
+button:disabled { cursor: not-allowed; opacity: 0.45; }
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }

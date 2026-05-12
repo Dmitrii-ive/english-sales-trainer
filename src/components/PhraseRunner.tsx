@@ -1,13 +1,54 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useLocale } from "@/components/LocaleSwitch";
 import { t, type Dict } from "@/lib/i18n";
 import { UI_GRADE } from "@/lib/sr";
 import type { SalesPhrase } from "@/lib/types";
+import {
+  RunnerShell,
+  PrimaryCTA,
+  GradeButtons,
+  FinishScreen,
+  EmptyScreen,
+} from "@/components/RunnerShell";
 
 type Mode = "flip" | "ru_en" | "audio_repeat";
+
+const MODE_SUBTITLE: Record<Mode, string> = {
+  flip: "tap to reveal",
+  ru_en: "translate to English",
+  audio_repeat: "listen & repeat",
+};
+
+const MODE_TITLE: Record<Mode, string> = {
+  flip: "Demo phrases",
+  ru_en: "Translation drill",
+  audio_repeat: "Listen & repeat",
+};
+
+const MODE_EYEBROW: Record<Mode, string> = {
+  flip: "Phrase Bank · SRS",
+  ru_en: "Phrase Bank · RU → EN",
+  audio_repeat: "Phrase Bank · Pronunciation",
+};
+
+function normalize(s: string) {
+  return s
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s']/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function speak(text: string) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.rate = 0.95;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
 
 export function PhraseRunner({
   items,
@@ -22,6 +63,7 @@ export function PhraseRunner({
   const [revealed, setRevealed] = useState(false);
   const [answer, setAnswer] = useState("");
   const [matched, setMatched] = useState<null | boolean>(null);
+
   const item = items[idx];
 
   function reset() {
@@ -51,214 +93,177 @@ export function PhraseRunner({
       setIdx(idx + 1);
       reset();
     } else {
-      setIdx(items.length); // finish
+      setIdx(items.length);
     }
   }
 
   if (items.length === 0) {
-    return (
-      <main className="flex-1 flex flex-col items-center justify-center p-6 text-[var(--color-fg-muted)]">
-        {d.noContent}
-        <Link href="/" className="mt-4 text-[var(--color-accent)]">
-          ← {d.backToHome}
-        </Link>
-      </main>
-    );
+    return <EmptyScreen message={d.noContent} backLabel={d.backToHome} />;
   }
 
   if (idx >= items.length) {
-    return (
-      <main className="flex-1 flex flex-col items-center justify-center p-6 gap-4">
-        <div className="text-3xl">✓</div>
-        <div className="text-lg">{items.length} done</div>
-        <Link
-          href="/"
-          className="mt-4 bg-[var(--color-accent-strong)] text-white font-medium rounded-xl px-6 py-3"
-        >
-          {d.finish}
-        </Link>
-      </main>
-    );
+    return <FinishScreen count={items.length} buttonLabel={d.finish} />;
   }
 
+  const subtitleParts = [`${items.length} phrases`, MODE_SUBTITLE[mode]];
+
   return (
-    <main className="flex-1 flex flex-col p-5 gap-4">
-      <TopBar idx={idx} total={items.length} label={d.salesPhrases} />
-      {mode === "flip" && (
-        <FlipCard
-          item={item}
+    <RunnerShell
+      eyebrow={MODE_EYEBROW[mode]}
+      title={MODE_TITLE[mode]}
+      subtitle={subtitleParts.join(" · ")}
+      total={items.length}
+      current={idx}
+      unitLabel="Phrase"
+      footer={
+        <Footer
+          mode={mode}
           revealed={revealed}
-          onReveal={() => setRevealed(true)}
+          canSubmit={mode === "ru_en" ? answer.trim().length > 0 : true}
+          onPrimary={() => {
+            if (mode === "ru_en") {
+              const userN = normalize(answer);
+              const ok =
+                item.keywords && item.keywords.length > 0
+                  ? item.keywords.every((kw) => userN.includes(normalize(kw)))
+                  : userN === normalize(item.text_en);
+              setMatched(ok);
+              setRevealed(true);
+            } else {
+              setRevealed(true);
+            }
+          }}
+          onGrade={gradeAndNext}
           d={d}
         />
-      )}
+      }
+    >
+      {mode === "flip" && <FlipBody item={item} revealed={revealed} d={d} />}
       {mode === "ru_en" && (
-        <TranslateCard
+        <TranslateBody
           item={item}
           answer={answer}
           setAnswer={setAnswer}
-          matched={matched}
-          onSubmit={() => {
-            const userN = normalize(answer);
-            const ok =
-              item.keywords && item.keywords.length > 0
-                ? item.keywords.every((kw) => userN.includes(normalize(kw)))
-                : userN === normalize(item.text_en);
-            setMatched(ok);
-            setRevealed(true);
-          }}
           revealed={revealed}
+          matched={matched}
           d={d}
         />
       )}
       {mode === "audio_repeat" && (
-        <AudioCard
-          item={item}
-          revealed={revealed}
-          onReveal={() => setRevealed(true)}
-          d={d}
-        />
+        <AudioBody item={item} revealed={revealed} d={d} />
       )}
-
-      {revealed && (
-        <div className="grid grid-cols-3 gap-2 mt-auto">
-          <Btn variant="danger" onClick={() => gradeAndNext("hard")}>{d.hard}</Btn>
-          <Btn variant="warn" onClick={() => gradeAndNext("good")}>{d.good}</Btn>
-          <Btn variant="success" onClick={() => gradeAndNext("easy")}>{d.easy}</Btn>
-        </div>
-      )}
-    </main>
+    </RunnerShell>
   );
 }
 
-function normalize(s: string) {
-  return s
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s']/gu, "")
-    .replace(/\s+/g, " ")
-    .trim();
+function Footer({
+  mode,
+  revealed,
+  canSubmit,
+  onPrimary,
+  onGrade,
+  d,
+}: {
+  mode: Mode;
+  revealed: boolean;
+  canSubmit: boolean;
+  onPrimary: () => void;
+  onGrade: (g: "hard" | "good" | "easy") => void;
+  d: Dict;
+}) {
+  if (!revealed) {
+    return (
+      <PrimaryCTA onClick={onPrimary} disabled={!canSubmit}>
+        {mode === "ru_en" ? d.submit : d.show}
+      </PrimaryCTA>
+    );
+  }
+  return (
+    <GradeButtons
+      onGrade={onGrade}
+      labels={{ hard: d.hard, good: d.good, easy: d.easy }}
+    />
+  );
 }
 
-function TopBar({
-  idx,
-  total,
-  label,
-}: {
-  idx: number;
-  total: number;
-  label: string;
-}) {
+function CardShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between">
-      <Link href="/" className="text-[var(--color-fg-muted)] text-sm">
-        ← {label}
-      </Link>
-      <div className="text-xs text-[var(--color-fg-muted)]">
-        {idx + 1} / {total}
-      </div>
+    <div className="flex-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-3xl p-6 flex flex-col gap-3 shadow-sm">
+      {children}
     </div>
   );
 }
 
-function Btn({
-  children,
-  onClick,
-  variant,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  variant: "danger" | "warn" | "success";
-}) {
-  const color =
-    variant === "danger"
-      ? "bg-[var(--color-danger)]"
-      : variant === "warn"
-        ? "bg-[var(--color-warn)]"
-        : "bg-[var(--color-success)]";
-  return (
-    <button
-      onClick={onClick}
-      className={`${color} text-white font-medium rounded-xl px-4 py-3`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function FlipCard({
+function FlipBody({
   item,
   revealed,
-  onReveal,
   d,
 }: {
   item: SalesPhrase;
   revealed: boolean;
-  onReveal: () => void;
   d: Dict;
 }) {
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="text-xs uppercase tracking-widest text-[var(--color-fg-muted)] mb-2">
-        RU
+    <CardShell>
+      <div className="text-xs italic text-[var(--color-fg-muted)] font-serif">
+        {d.translate}
       </div>
-      <div className="text-xl">{item.text_ru}</div>
-      <div className="mt-6 pt-6 border-t border-[var(--color-border)]">
-        {revealed ? (
-          <>
-            <div className="text-xs uppercase tracking-widest text-[var(--color-fg-muted)] mb-2">
-              EN
+      <div className="font-serif text-2xl leading-snug mt-2">{item.text_ru}</div>
+
+      {revealed && (
+        <>
+          <div className="border-t border-[var(--color-border)] mt-6 pt-6">
+            <div className="text-xs italic text-[var(--color-fg-muted)] font-serif mb-2">
+              English
             </div>
-            <div className="text-xl">{item.text_en}</div>
+            <div className="text-xl leading-snug">{item.text_en}</div>
             {item.notes && (
               <div className="mt-3 text-sm text-[var(--color-fg-muted)]">
                 {item.notes}
               </div>
             )}
-            <SpeakButton text={item.text_en} className="mt-3" label={d.listen} />
-          </>
-        ) : (
+          </div>
           <button
-            onClick={onReveal}
-            className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl px-4 py-3 w-full"
+            onClick={() => speak(item.text_en)}
+            className="mt-4 self-start inline-flex items-center gap-2 text-sm text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
+            aria-label={d.listen}
           >
-            {d.show}
+            🔊 <span>{d.listen}</span>
           </button>
-        )}
-      </div>
-    </div>
+        </>
+      )}
+    </CardShell>
   );
 }
 
-function TranslateCard({
+function TranslateBody({
   item,
   answer,
   setAnswer,
-  onSubmit,
-  matched,
   revealed,
+  matched,
   d,
 }: {
   item: SalesPhrase;
   answer: string;
   setAnswer: (s: string) => void;
-  onSubmit: () => void;
-  matched: boolean | null;
   revealed: boolean;
+  matched: boolean | null;
   d: Dict;
 }) {
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="text-xs uppercase tracking-widest text-[var(--color-fg-muted)] mb-2">
+    <CardShell>
+      <div className="text-xs italic text-[var(--color-fg-muted)] font-serif">
         {d.translate}
       </div>
-      <div className="text-xl">{item.text_ru}</div>
+      <div className="font-serif text-2xl leading-snug mt-2">{item.text_ru}</div>
 
       {item.keywords && item.keywords.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2">
+        <div className="flex flex-wrap gap-1.5 mt-3">
           {item.keywords.map((kw, i) => (
             <span
               key={i}
-              className="inline-block text-xs px-2 py-1 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent-strong)] border border-[var(--color-accent)]/20"
+              className="inline-block text-xs px-2.5 py-1 rounded-full bg-[var(--color-accent)]/8 text-[var(--color-accent-strong)] border border-[var(--color-accent)]/20"
             >
               {kw}
             </span>
@@ -271,22 +276,12 @@ function TranslateCard({
         onChange={(e) => setAnswer(e.target.value)}
         disabled={revealed}
         rows={3}
-        className="mt-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl px-4 py-3"
         placeholder={d.yourAnswer}
+        className="mt-4 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl px-4 py-3 focus:outline-none focus:border-[var(--color-fg)]"
       />
 
-      {!revealed && (
-        <button
-          onClick={onSubmit}
-          disabled={!answer.trim()}
-          className="mt-3 bg-[var(--color-accent-strong)] text-white font-medium rounded-xl px-4 py-3"
-        >
-          {d.submit}
-        </button>
-      )}
-
       {revealed && (
-        <div className="mt-4">
+        <div className="mt-4 border-t border-[var(--color-border)] pt-4">
           <div
             className={`text-sm font-medium ${
               matched ? "text-[var(--color-success)]" : "text-[var(--color-danger)]"
@@ -294,26 +289,30 @@ function TranslateCard({
           >
             {matched ? d.correct : d.incorrect}
           </div>
-          <div className="text-xs uppercase tracking-widest text-[var(--color-fg-muted)] mt-3">
+          <div className="text-xs italic text-[var(--color-fg-muted)] font-serif mt-3">
             {d.correctAnswer}
           </div>
-          <div className="text-lg">{item.text_en}</div>
-          <SpeakButton text={item.text_en} className="mt-2" label={d.listen} />
+          <div className="text-base mt-1">{item.text_en}</div>
+          <button
+            onClick={() => speak(item.text_en)}
+            className="mt-3 inline-flex items-center gap-2 text-sm text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
+            aria-label={d.listen}
+          >
+            🔊 <span>{d.listen}</span>
+          </button>
         </div>
       )}
-    </div>
+    </CardShell>
   );
 }
 
-function AudioCard({
+function AudioBody({
   item,
   revealed,
-  onReveal,
   d,
 }: {
   item: SalesPhrase;
   revealed: boolean;
-  onReveal: () => void;
   d: Dict;
 }) {
   const played = useRef(false);
@@ -325,58 +324,27 @@ function AudioCard({
   }, [item.id, item.text_en]);
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
-      <div className="text-xs uppercase tracking-widest text-[var(--color-fg-muted)]">
+    <CardShell>
+      <div className="text-xs italic text-[var(--color-fg-muted)] font-serif">
         Listen & repeat
       </div>
-      <SpeakButton text={item.text_en} large label={d.listen} />
-      {revealed ? (
-        <>
-          <div className="text-xl mt-4">{item.text_en}</div>
-          <div className="text-sm text-[var(--color-fg-muted)]">{item.text_ru}</div>
-        </>
-      ) : (
+      <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 py-6">
         <button
-          onClick={onReveal}
-          className="mt-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl px-6 py-3"
+          onClick={() => speak(item.text_en)}
+          className="w-20 h-20 rounded-full bg-[var(--color-surface-2)] border border-[var(--color-border)] flex items-center justify-center text-3xl"
+          aria-label={d.listen}
         >
-          {d.show}
+          🔊
         </button>
+        <div className="text-sm text-[var(--color-fg-muted)]">{d.listen}</div>
+      </div>
+
+      {revealed && (
+        <div className="border-t border-[var(--color-border)] pt-4">
+          <div className="font-serif text-xl leading-snug">{item.text_en}</div>
+          <div className="text-sm text-[var(--color-fg-muted)] mt-2">{item.text_ru}</div>
+        </div>
       )}
-    </div>
+    </CardShell>
   );
-}
-
-function SpeakButton({
-  text,
-  className,
-  large,
-  label,
-}: {
-  text: string;
-  className?: string;
-  large?: boolean;
-  label: string;
-}) {
-  return (
-    <button
-      onClick={() => speak(text)}
-      className={`inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] ${
-        large ? "px-6 py-4 text-base" : "px-3 py-2 text-sm"
-      } ${className ?? ""}`}
-      aria-label={label}
-    >
-      <span aria-hidden>🔊</span>
-      <span>{label}</span>
-    </button>
-  );
-}
-
-function speak(text: string) {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  u.rate = 0.95;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(u);
 }

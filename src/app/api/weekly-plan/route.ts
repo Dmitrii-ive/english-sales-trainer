@@ -12,9 +12,20 @@ const Exercise = z.object({
     "cloze",
     "error_finding",
     "quiz",
+    "drill",
   ]),
   mode: z
-    .enum(["audio_repeat", "ru_en", "flip", "speaking", "roleplay", "cloze", "error_finding", "quiz"])
+    .enum([
+      "audio_repeat",
+      "ru_en",
+      "flip",
+      "speaking",
+      "roleplay",
+      "cloze",
+      "error_finding",
+      "quiz",
+      "drill",
+    ])
     .optional(),
   item_ids: z.array(z.string().uuid()).min(1),
 });

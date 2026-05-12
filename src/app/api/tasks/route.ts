@@ -74,6 +74,22 @@ const QuizItem = z
     { message: "option_whys length must match options length" },
   );
 
+const DrillItemSchema = z
+  .object({
+    topic: z.string().min(1),
+    subtopic: z.string().optional(),
+    sentence: z.string().min(1).refine((s) => s.includes("___") || s.includes("…"), {
+      message: "sentence must contain a blank marker (___ or …)",
+    }),
+    options: z.array(z.string()).min(2).max(5),
+    correct_index: z.number().int().nonnegative(),
+    explanation: z.string().optional(),
+    meeting_ref: z.string().optional(),
+  })
+  .refine((v) => v.correct_index < v.options.length, {
+    message: "correct_index out of range",
+  });
+
 const Body = z.discriminatedUnion("type", [
   z.object({ type: z.literal("sales_phrase"), items: z.array(SalesPhraseItem).min(1) }),
   z.object({ type: z.literal("vocabulary"), items: z.array(VocabularyItem).min(1) }),
@@ -82,6 +98,7 @@ const Body = z.discriminatedUnion("type", [
   z.object({ type: z.literal("cloze"), items: z.array(ClozeItem).min(1) }),
   z.object({ type: z.literal("error_finding"), items: z.array(ErrorFindingItem).min(1) }),
   z.object({ type: z.literal("quiz"), items: z.array(QuizItem).min(1) }),
+  z.object({ type: z.literal("drill"), items: z.array(DrillItemSchema).min(1) }),
 ]);
 
 export async function POST(request: Request) {
@@ -166,6 +183,16 @@ export async function POST(request: Request) {
         const r = await sql<{ id: string }>`
           INSERT INTO quiz_questions (quiz_topic, scenario, question, options, correct_index, option_whys, explanation, meeting_ref)
           VALUES (${it.quiz_topic}, ${it.scenario ?? null}, ${it.question}, ${JSON.stringify(it.options)}::jsonb, ${it.correct_index}, ${it.option_whys ? JSON.stringify(it.option_whys) : null}::jsonb, ${it.explanation ?? null}, ${it.meeting_ref ?? null})
+          RETURNING id`;
+        ids.push(r.rows[0].id);
+      }
+      break;
+    }
+    case "drill": {
+      for (const it of parsed.data.items) {
+        const r = await sql<{ id: string }>`
+          INSERT INTO drill_items (topic, subtopic, sentence, options, correct_index, explanation, meeting_ref)
+          VALUES (${it.topic}, ${it.subtopic ?? null}, ${it.sentence}, ${JSON.stringify(it.options)}::jsonb, ${it.correct_index}, ${it.explanation ?? null}, ${it.meeting_ref ?? null})
           RETURNING id`;
         ids.push(r.rows[0].id);
       }

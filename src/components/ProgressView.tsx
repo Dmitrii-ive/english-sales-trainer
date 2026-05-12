@@ -16,6 +16,7 @@ export type ProgressData = {
     cloze: number;
     error_finding: number;
     quiz: number;
+    drill: number;
   };
   due_today: number;
   history: { date: string; exercises: number; accuracy: number | null }[]; // last 14 days
@@ -32,6 +33,7 @@ export function ProgressView({ data }: { data: ProgressData }) {
     cloze: d.cloze,
     error_finding: d.errorFinding,
     quiz: d.quiz,
+    drill: d.drill,
   };
 
   const maxBar = Math.max(1, ...data.history.map((h) => h.exercises));

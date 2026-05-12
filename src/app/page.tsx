@@ -29,7 +29,7 @@ export default async function HomePage() {
       fluency_ease: number | null;
     }>`SELECT
          AVG(CASE WHEN item_type = 'vocabulary' THEN ease END)::real AS vocab_ease,
-         AVG(CASE WHEN item_type IN ('cloze','error_finding') THEN ease END)::real AS grammar_ease,
+         AVG(CASE WHEN item_type IN ('cloze','error_finding','drill') THEN ease END)::real AS grammar_ease,
          AVG(CASE WHEN item_type IN ('sales_phrase','speaking','roleplay','quiz') THEN ease END)::real AS fluency_ease
        FROM reviews
        WHERE last_reviewed_at >= now() - INTERVAL '30 days'`,

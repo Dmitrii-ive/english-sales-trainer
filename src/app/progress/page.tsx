@@ -24,7 +24,7 @@ export default async function ProgressPage() {
         fluency_ease: number | null;
       }>`SELECT
            AVG(CASE WHEN item_type = 'vocabulary' THEN ease END)::real AS vocab_ease,
-           AVG(CASE WHEN item_type IN ('cloze','error_finding') THEN ease END)::real AS grammar_ease,
+           AVG(CASE WHEN item_type IN ('cloze','error_finding','drill') THEN ease END)::real AS grammar_ease,
            AVG(CASE WHEN item_type IN ('sales_phrase','speaking','roleplay','quiz') THEN ease END)::real AS fluency_ease
          FROM reviews
          WHERE last_reviewed_at >= now() - INTERVAL '30 days'`,
@@ -36,6 +36,7 @@ export default async function ProgressPage() {
         cloze: number;
         error_finding: number;
         quiz: number;
+        drill: number;
       }>`SELECT
            (SELECT COUNT(*)::int FROM sales_phrases)        AS sales_phrase,
            (SELECT COUNT(*)::int FROM vocabulary)           AS vocabulary,
@@ -43,7 +44,8 @@ export default async function ProgressPage() {
            (SELECT COUNT(*)::int FROM roleplay_scenarios)   AS roleplay,
            (SELECT COUNT(*)::int FROM cloze_items)          AS cloze,
            (SELECT COUNT(*)::int FROM error_finding_items)  AS error_finding,
-           (SELECT COUNT(*)::int FROM quiz_questions)       AS quiz`,
+           (SELECT COUNT(*)::int FROM quiz_questions)       AS quiz,
+           (SELECT COUNT(*)::int FROM drill_items)          AS drill`,
       sql<{ n: number }>`
         SELECT COUNT(*)::int AS n FROM reviews WHERE next_review_at::date <= ${today}`,
       sql<{ date: string; exercises: number; accuracy: number | null }>`
@@ -92,6 +94,7 @@ export default async function ProgressPage() {
       cloze: 0,
       error_finding: 0,
       quiz: 0,
+      drill: 0,
     },
     due_today: dueRes.rows[0]?.n ?? 0,
     history: padded,
