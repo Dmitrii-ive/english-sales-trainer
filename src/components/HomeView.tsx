@@ -26,6 +26,17 @@ const TYPE_LABEL_KEY: Record<string, keyof (typeof t)["en"]> = {
   quiz: "quiz",
 };
 
+const MODE_LABEL: Record<string, string> = {
+  flip: "flashcards",
+  ru_en: "RU → EN",
+  audio_repeat: "listen & repeat",
+  speaking: "speaking",
+  roleplay: "roleplay",
+  cloze: "fill blanks",
+  error_finding: "fix mistakes",
+  quiz: "quiz",
+};
+
 export function HomeView({
   plan,
   streak,
@@ -82,7 +93,10 @@ export function HomeView({
               const href = TYPE_HREF[ex.type] ?? "/";
               const labelKey = TYPE_LABEL_KEY[ex.type];
               const label = d[labelKey] ?? ex.type;
-              const mode = ex.mode ? ` · ${ex.mode}` : "";
+              const modeLabel =
+                ex.mode && MODE_LABEL[ex.mode] && ex.mode !== ex.type
+                  ? ` · ${MODE_LABEL[ex.mode]}`
+                  : "";
               const params = new URLSearchParams({
                 ids: ex.item_ids.join(","),
                 ...(ex.mode ? { mode: ex.mode } : {}),
@@ -101,7 +115,7 @@ export function HomeView({
                         <div className="font-medium">
                           {label}
                           <span className="text-[var(--color-fg-muted)] text-xs">
-                            {mode}
+                            {modeLabel}
                           </span>
                         </div>
                       </div>
