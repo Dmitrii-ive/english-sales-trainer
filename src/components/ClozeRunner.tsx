@@ -70,7 +70,7 @@ export function ClozeRunner({ items }: { items: ClozeItem[] }) {
         <div className="text-lg">{items.length} done</div>
         <Link
           href="/"
-          className="bg-[var(--color-accent-strong)] text-black font-medium rounded-xl px-6 py-3"
+          className="bg-[var(--color-accent-strong)] text-white font-medium rounded-xl px-6 py-3"
         >
           {d.finish}
         </Link>
@@ -132,7 +132,7 @@ export function ClozeRunner({ items }: { items: ClozeItem[] }) {
         </div>
       )}
 
-      <div className="text-base leading-relaxed">
+      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl px-4 py-4 text-base leading-relaxed">
         {segments.map((s, i) =>
           s.kind === "text" ? (
             <span key={i}>{s.value}</span>
@@ -154,7 +154,7 @@ export function ClozeRunner({ items }: { items: ClozeItem[] }) {
         <button
           onClick={() => setRevealed(true)}
           disabled={!answers.some((a) => a && a.trim().length > 0)}
-          className="bg-[var(--color-accent-strong)] text-black font-medium rounded-xl px-4 py-3 mt-4"
+          className="bg-[var(--color-accent-strong)] text-white font-medium rounded-xl px-4 py-3 mt-4"
         >
           {d.submit}
         </button>
@@ -162,19 +162,19 @@ export function ClozeRunner({ items }: { items: ClozeItem[] }) {
         <div className="grid grid-cols-3 gap-2 mt-auto">
           <button
             onClick={() => next("hard")}
-            className="bg-[var(--color-danger)] text-black font-medium rounded-xl px-4 py-3"
+            className="bg-[var(--color-danger)] text-white font-medium rounded-xl px-4 py-3"
           >
             {d.hard}
           </button>
           <button
             onClick={() => next("good")}
-            className="bg-[var(--color-warn)] text-black font-medium rounded-xl px-4 py-3"
+            className="bg-[var(--color-warn)] text-white font-medium rounded-xl px-4 py-3"
           >
             {d.good}
           </button>
           <button
             onClick={() => next("easy")}
-            className="bg-[var(--color-success)] text-black font-medium rounded-xl px-4 py-3"
+            className="bg-[var(--color-success)] text-white font-medium rounded-xl px-4 py-3"
           >
             {d.easy}
           </button>

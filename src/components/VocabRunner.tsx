@@ -31,7 +31,7 @@ export function VocabRunner({ items }: { items: VocabularyItem[] }) {
         <div className="text-lg">{items.length} done</div>
         <Link
           href="/"
-          className="bg-[var(--color-accent-strong)] text-black font-medium rounded-xl px-6 py-3"
+          className="bg-[var(--color-accent-strong)] text-white font-medium rounded-xl px-6 py-3"
         >
           {d.finish}
         </Link>
@@ -118,19 +118,19 @@ export function VocabRunner({ items }: { items: VocabularyItem[] }) {
         <div className="grid grid-cols-3 gap-2 mt-2">
           <button
             onClick={() => gradeAndNext("hard")}
-            className="bg-[var(--color-danger)] text-black font-medium rounded-xl px-4 py-3"
+            className="bg-[var(--color-danger)] text-white font-medium rounded-xl px-4 py-3"
           >
             {d.hard}
           </button>
           <button
             onClick={() => gradeAndNext("good")}
-            className="bg-[var(--color-warn)] text-black font-medium rounded-xl px-4 py-3"
+            className="bg-[var(--color-warn)] text-white font-medium rounded-xl px-4 py-3"
           >
             {d.good}
           </button>
           <button
             onClick={() => gradeAndNext("easy")}
-            className="bg-[var(--color-success)] text-black font-medium rounded-xl px-4 py-3"
+            className="bg-[var(--color-success)] text-white font-medium rounded-xl px-4 py-3"
           >
             {d.easy}
           </button>

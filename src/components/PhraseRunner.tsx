@@ -68,7 +68,7 @@ export function PhraseRunner({
         <div className="text-lg">{items.length} done</div>
         <Link
           href="/"
-          className="mt-4 bg-[var(--color-accent-strong)] text-black font-medium rounded-xl px-6 py-3"
+          className="mt-4 bg-[var(--color-accent-strong)] text-white font-medium rounded-xl px-6 py-3"
         >
           {d.finish}
         </Link>
@@ -169,7 +169,7 @@ function Btn({
   return (
     <button
       onClick={onClick}
-      className={`${color} text-black font-medium rounded-xl px-4 py-3`}
+      className={`${color} text-white font-medium rounded-xl px-4 py-3`}
     >
       {children}
     </button>
@@ -257,7 +257,7 @@ function TranslateCard({
         <button
           onClick={onSubmit}
           disabled={!answer.trim()}
-          className="mt-3 bg-[var(--color-accent-strong)] text-black font-medium rounded-xl px-4 py-3"
+          className="mt-3 bg-[var(--color-accent-strong)] text-white font-medium rounded-xl px-4 py-3"
         >
           {d.submit}
         </button>

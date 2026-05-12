@@ -53,7 +53,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={busy || !pw}
-          className="bg-[var(--color-accent-strong)] text-black font-medium rounded-xl px-4 py-3 mt-2"
+          className="bg-[var(--color-accent-strong)] text-white font-medium rounded-xl px-4 py-3 mt-2"
         >
           {busy ? "…" : d.login}
         </button>
